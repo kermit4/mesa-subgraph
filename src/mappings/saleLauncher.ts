@@ -44,7 +44,6 @@ function registerFairSale(event: SaleInitialized): Schemas.FairSale {
   // Timestamps
   fairSale.createdAt = event.block.timestamp.toI32()
   fairSale.updatedAt = event.block.timestamp.toI32()
-
   fairSale.minimumBidAmount = fairSaleContract.minimumBiddingAmountPerOrder()
   // Start and end dates of the sale
   fairSale.startDate = fairSaleContract.auctionStartedDate().toI32()
@@ -62,7 +61,17 @@ function registerFairSale(event: SaleInitialized): Schemas.FairSale {
   fairSale.tokenOut = tokenOut.id
   // Sale name
   fairSale.name = tokenOut.name || ''
-  // Save
+
+  // Store/save the first order/bid
+  let fairSaleBid = new Schemas.FairSaleBid('2324531242')
+  let decodeOrder = decodeOrder(fairSaleContract.initialAuctionOrder())
+  fairSaleBid.tokenInAmount = decodeOrder.tokenInAmount
+  fairSaleBid.tokenOutAmount = decodeOrder.tokenOutAmount
+  fairSaleBid.address = decodeOrder.ownerId
+  fairSaleBid.sale = event.params.sale
+  // Save the bid to the database
+  fairSaleBid.save()
+  // Save the sale
   fairSale.save()
 
   return fairSale
@@ -108,34 +117,74 @@ function registerFixedPriceSale(event: SaleInitialized): Schemas.FixedPriceSale 
   return fixedPriceSale
 }
 
-export function encodeOrder(order: any): string {
-  return (
-    '0x' +
-    order.ownerId
-      .toHexString()
-      .slice(2)
-      .padStart(16, '0') +
-    order.orderTokenOut
-      .toHexString()
-      .slice(2)
-      .padStart(24, '0') +
-    order.orderTokenIn
-      .toHexString()
-      .slice(2)
-      .padStart(24, '0')
-  )
+// export function encodeOrder(order: any): string {
+//   return (
+//     '0x' +
+//     order.ownerId
+//       .toHexString()
+//       .slice(2)
+//       .padStart(16, '0') +
+//     order.orderTokenOut
+//       .toHexString()
+//       .slice(2)
+//       .padStart(24, '0') +
+//     order.orderTokenIn
+//       .toHexString()
+//       .slice(2)
+//       .padStart(24, '0')
+//   )
+// }
+
+// export function decodeOrder(bytes: string) {
+//   return {
+//     ownerId: '0x' + bytes.substring(2, 18),
+//     orderTokenIn: '0x' + bytes.substring(43, 66),
+//     orderTokenOut: '0x' + bytes.substring(19, 42)
+//   }
+// }
+
+// input
+// 0x00000000000000010000003635c9adc5dea00000000000008ac7230489e80000
+/*
+
+expected out:
+{
+  ownerId: '0x' + bytes.substring(2, 18),
+  orderTokenIn: '0x' + bytes.substring(43, 66),
+  orderTokenOut: '0x' + bytes.substring(19, 42)
 }
 
-interface Order {
-  ownerId: string
-  orderTokenIn: string
-  orderTokenOut: string
+*/
+
+export function decodeOrderOwnerId(bytes: string): string {
+  return '0x' + bytes.substring(2, 18)
 }
 
-export function decodeOrder(bytes: string): Order {
-  return {
-    ownerId: '0x' + bytes.substring(2, 18),
-    orderTokenIn: '0x' + bytes.substring(43, 66),
-    orderTokenOut: '0x' + bytes.substring(19, 42)
-  }
+export function decodeOrderTokenIn(bytes: string): string {
+  return '0x' + bytes.substring(43, 66)
 }
+
+export function decodeOrderTokenOut(bytes: string): string {
+  return '0x' + bytes.substring(19, 42)
+}
+
+/**
+ *
+ */
+
+const listOfSaleBids = [
+  '0x00000000000000010000003635c9adc5dea00000000000008ac7230489e80000',
+  '0x00000000000000010000003635c9adc5dea00000000000008ac7230489e80000',
+  '0x00000000000000010000003635c9adc5dea00000000000008ac7230489e80000',
+  '0x00000000000000010000003635c9adc5dea00000000000008ac7230489e80000'
+]
+
+const decodedOrdered = listOfSaleBids.map(decodeOrder)
+
+/*
+decodedOrdered = [{
+     ownerId,
+    tokenInAmount,
+    tokenOutAmount,
+}]
+*/
