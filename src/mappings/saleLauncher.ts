@@ -44,6 +44,7 @@ function registerFairSale(event: SaleInitialized): Schemas.FairSale {
   // Timestamps
   fairSale.createdAt = event.block.timestamp.toI32()
   fairSale.updatedAt = event.block.timestamp.toI32()
+
   fairSale.minimumBidAmount = fairSaleContract.minimumBiddingAmountPerOrder()
   // Start and end dates of the sale
   fairSale.startDate = fairSaleContract.auctionStartedDate().toI32()
@@ -105,4 +106,36 @@ function registerFixedPriceSale(event: SaleInitialized): Schemas.FixedPriceSale 
   fixedPriceSale.save()
 
   return fixedPriceSale
+}
+
+export function encodeOrder(order: any): string {
+  return (
+    '0x' +
+    order.ownerId
+      .toHexString()
+      .slice(2)
+      .padStart(16, '0') +
+    order.orderTokenOut
+      .toHexString()
+      .slice(2)
+      .padStart(24, '0') +
+    order.orderTokenIn
+      .toHexString()
+      .slice(2)
+      .padStart(24, '0')
+  )
+}
+
+interface Order {
+  ownerId: string
+  orderTokenIn: string
+  orderTokenOut: string
+}
+
+export function decodeOrder(bytes: string): Order {
+  return {
+    ownerId: '0x' + bytes.substring(2, 18),
+    orderTokenIn: '0x' + bytes.substring(43, 66),
+    orderTokenOut: '0x' + bytes.substring(19, 42)
+  }
 }
