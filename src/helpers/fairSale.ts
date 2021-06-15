@@ -1,28 +1,28 @@
 import { Bytes, BigInt, ethereum, Value } from '@graphprotocol/graph-ts'
 
 export class Order {
-  _ownerId: ethereum.Value
-  _tokenIn: ethereum.Value
-  _tokenOut: ethereum.Value
+  _ownerId: String
+  _tokenIn: Bytes
+  _tokenOut: Bytes
 
   private constructor(bytes: Bytes) {
     let byesString = bytes.toString()
 
-    this._ownerId = ethereum.Value.fromString('0x' + byesString.substring(2, 18))
-    this._tokenIn = ethereum.Value.fromString('0x' + byesString.substring(43, 66))
-    this._tokenOut = ethereum.Value.fromString('0x' + byesString.substring(19, 42))
+    this._ownerId = (bytes.subarray(2,18) as Bytes).toString()
+    this._tokenOut =    BigInt.fromUnsignedBytes(bytes.subarray(19,42) as Bytes)
+    this._tokenIn =     BigInt.fromUnsignedBytes(bytes.subarray(43,66) as Bytes)
   }
 
-  get ownerId(): BigInt {
-    return this._ownerId.toBigInt()
+    get ownerId(): String {
+    return this._ownerId
   }
 
   get tokenOut(): BigInt {
-    return this._tokenIn.toBigInt()
+      return this._tokenOut
   }
 
   get tokenIn(): BigInt {
-    return this._tokenIn.toBigInt()
+      return this._tokenIn
   }
 
   static decodeFromBytes(bytes: Bytes): Order {

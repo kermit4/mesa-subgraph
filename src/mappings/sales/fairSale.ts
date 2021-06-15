@@ -91,7 +91,7 @@ export function handleNewOrder(event: NewOrder): void {
   bid.tokenInAmount = event.params.orderTokenIn
   bid.tokenOutAmount = event.params.orderTokenOut
   // Update FairSaleUser ref
-  bid.owner = event.transaction.from.toHexString()
+  bid.ownerId = event.transaction.from.toHexString()
   // Update FairSale ref
   bid.sale = event.address.toHexString()
   bid.status = BID_STATUS.SUBMITTED

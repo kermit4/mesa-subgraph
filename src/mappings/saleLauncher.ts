@@ -85,7 +85,7 @@ function registerFairSale(event: SaleInitialized): Schemas.FairSale {
     fairSaleBid.tokenOutAmount = fairSaleContract.minimumBiddingAmountPerOrder()
     fairSaleBid.status = BID_STATUS.SUBMITTED
     // Update ref of FairSaleUser to ownerId
-    fairSaleBid.owner = fairSaleUserId // first bid is FairSaleUse always from the owner
+    fairSaleBid.ownerId = fairSaleUserId // first bid is FairSaleUse always from the owner
     fairSaleBid.sale = event.params.sale.toHexString()
     // Save the bid to the database
     fairSaleBid.save()
